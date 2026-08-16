@@ -1,0 +1,58 @@
+services:
+  app-node:
+    build: ./app
+    container_name: proiect-node-container
+    depends_on:
+      postgresql_service:
+        condition: service_healthy
+        restart: true 
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: postgresql_service
+      DB_PORT: 5432
+    secrets:
+      - db_user
+      - db_name
+      - db_password
+    restart: on-failure
+    networks: 
+      - retea-proiect
+  
+  postgresql_service:
+    image: postgres:18.4
+    container_name: postgresdb-container
+    restart: always
+    environment:
+      POSTGRES_USER_FILE: /run/secrets/db_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      POSTGRES_DB_FILE: /run/secrets/db_name
+    secrets:
+      - db_user
+      - db_name
+      - db_password
+    volumes:
+      - date_db:/var/lib/postgresql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $(cat /run/secrets/db_user) -d $(cat /run/secrets/db_name)" ]
+      interval: 1s
+      timeout: 30s
+      retries: 3
+      start_period: 30s
+    networks: 
+      - retea-proiect
+
+volumes:
+  date_db: 
+
+networks:
+  retea-proiect:
+    driver: bridge
+secrets:
+  db_user:
+    file: ./secrets/db_user.txt
+  db_name:
+    file: ./secrets/db_name.txt
+  db_password:
+    file: ./secrets/db_password.txt
