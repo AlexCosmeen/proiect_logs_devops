@@ -1,6 +1,6 @@
-variable "instance_type"{
-    type = string
-    default = "t3.micro"
+variable "instance_type" {
+  type    = string
+  default = "t3.micro"
 }
 variable "vpc_cidr" {
   type    = string

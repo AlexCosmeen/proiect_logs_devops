@@ -6,16 +6,16 @@ terraform {
     }
   }
   backend "s3" {
-    bucket = "alex-log-app-tf-state-2026"
-    key = "terraform.tfstate"
-    region = "eu-north-1"
-    encrypt = true
+    bucket       = "alex-log-app-tf-state-2026"
+    key          = "terraform.tfstate"
+    region       = "eu-north-1"
+    encrypt      = true
     use_lockfile = true
   }
 }
 
 data "aws_ami" "ami_ubuntu_os" {
-  most_recent=true
+  most_recent = true
   filter {
     name   = "name"
     values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"]
@@ -41,14 +41,14 @@ output "security_group_id" {
 }
 
 resource "aws_instance" "ec2_instance" {
-    ami = data.aws_ami.ami_ubuntu_os.id
-    instance_type = var.instance_type
-    vpc_security_group_ids = [aws_security_group.security_group_test_EC2.id]
-    subnet_id = aws_subnet.subnet_test.id
-    key_name = "Key_pair_EC2"
-    associate_public_ip_address = true
-    iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
-    user_data = <<-EOF
+  ami                         = data.aws_ami.ami_ubuntu_os.id
+  instance_type               = var.instance_type
+  vpc_security_group_ids      = [aws_security_group.security_group_test_EC2.id]
+  subnet_id                   = aws_subnet.subnet_test.id
+  key_name                    = "Key_pair_EC2"
+  associate_public_ip_address = true
+  iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
+  user_data                   = <<-EOF
     #!/bin/bash
     apt-get update -y
     apt-get install -y docker.io docker-compose-v2 git awscli
@@ -81,12 +81,12 @@ resource "aws_instance" "ec2_instance" {
     docker compose up -d 
     
     EOF
-  
+
 }
 
 resource "aws_secretsmanager_secret" "database" {
   for_each = var.database_secrets
-  name = each.value
+  name     = each.value
   tags = {
     Project = "log-app"
   }
